@@ -1,0 +1,71 @@
+rollout Thumbnail "导出缩略图" width:443 height:170
+(
+	bitmap 'bmp1' "Bitmap" pos:[3,3] width:186 height:159 align:#left
+	groupBox 'grp1' "缩略图设置" pos:[200,10] width:219 height:152 align:#left
+	label 'lblname' "文件名" pos:[211,35] width:36 height:17 align:#left
+	editText 'edtName' "" pos:[250,33] width:160 height:20 align:#left
+	button 'btnSetPath' "保存" pos:[210,118] width:201 height:20 align:#left
+	button 'btnRender' "渲染" pos:[210,140] width:201 height:20 align:#left
+	editText 'edtWidth' "" pos:[250,61] width:160 height:20 align:#left
+	editText 'edtheight' "" pos:[250,87] width:160 height:20 align:#left
+	label 'lbl11' "长" pos:[213,63] width:14 height:17 align:#left
+	label 'lbl12' "宽" pos:[214,90] width:14 height:17 align:#left
+	
+	on Thumbnail open do
+	(
+		renderers.current = Default_Scanline_Renderer ()
+		
+		backgroundColor = color 255 255 255
+		--viewport.setType #view_persp_user
+		viewport.activeViewport 
+		actionMan.executeAction 0 "310" -- Tools: 最大化显示选定对象
+		local bm = bitmap 186 159  
+		render vfb:false to:bm
+		bmp1.bitmap = bm
+		
+		edtWidth.text = 1280 AS String
+		edtheight.text = 1280 AS String
+
+		edtName.text = getFileNameFile MaxFileName
+				
+	)
+	
+	on btnRender pressed do
+	(
+		renderers.current = Default_Scanline_Renderer ()
+		backgroundColor = color 255 255 255
+		viewport.activeViewport 
+		actionMan.executeAction 0 "310" -- Tools: 最大化显示选定对象
+		local bm = bitmap 186 159  
+		render vfb:false to:bm
+		bmp1.bitmap = bm	
+	)
+	
+	on btnSetPath pressed do
+	(
+		if (edtWidth.text == "" or edtheight.text == "") then
+		(
+			messagebox "请设置尺寸"
+			return()
+		)
+		
+		if (edtName.text == "") then
+		(
+			messagebox "请设置文件名"
+			return()
+		)		
+		
+		
+		bmp_name = edtName.text 
+		bmp_name = getSaveFileName caption: "Save Viewport to:" \
+		filename:bmp_name types: "JPG(*.jpg)|*.jpg|TGA(*.tga)|*.tga|BMP(*.bmp)|*.bmp|TIFF(*.tif)|*.tif|"	
+ 
+		if bmp_name != undefined then  
+		(
+			render outputwidth:(edtWidth.text as Integer) outputheight:(edtheight.text as Integer)  vfb:false  outputfile:bmp_name
+ 
+		) 
+	)
+	
+)
+ 
