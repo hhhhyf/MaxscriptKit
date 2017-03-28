@@ -1,0 +1,129 @@
+ 
+--相同材质的模型合并成一个组件
+Struct DetachAll 
+(
+	 name_type = 1,
+	 the_polyobj,
+	 ran_color = true,
+	 the_name,
+	 the_mat_arr = #(),
+	 id_list = #(),
+	
+	fn getMaterialIDs obj =
+	(
+		id_arr = #()
+		
+		for i in 1 to 99 do
+		(
+			obj.selectByMaterial i
+			the_faces = getFaceSelection obj
+			if (the_faces as array).count != 0 do
+			(
+				append id_arr i
+			)
+
+		)
+		 id_arr
+	),
+	
+	fn getMatTextureName mat =
+	(
+		local the_map_name = the_polyobj.name
+		
+		try
+		(			
+			bmp = mat.diffusemap	
+			if classof bmp == Bitmaptexture then
+			(
+				the_mapfile = mat.diffuseMap.bitmap.filename
+				the_map_name = getFileNameFile the_mapfile
+			)
+			else
+			(
+				the_map_name = mat.name
+			)
+		)
+		catch()
+		
+		 the_map_name
+	),
+	
+	fn attachall = 
+	(
+		local p_objects = #()
+		local p_materials = #()
+
+		for o in objects where o.material != undefined and classof o.material != Multimaterial do (
+			local i = finditem p_materials o.material
+			if  i > 0 then (
+				if classof p_objects[i] != Editable_Poly then p = convertToPoly(p_objects[i]) else p = p_objects[i]
+				polyOp.attach p o
+			)
+			else (
+				append p_materials o.material
+				append p_objects o
+			)
+		)
+	),
+	
+	fn run = 
+	(
+	
+		local list = #()
+		for g in geometry do
+		(
+			mat = g.material
+			if (classof mat == Multimaterial) then
+			(
+				flag = true
+				append list  g
+			)
+				
+		)
+
+		the_sel = list as array
+		if the_sel.count != 0 do
+		(
+			print "do detach"
+				for obj in the_sel where \
+				superclassof obj == GeometryClass and \
+				classof obj.material != undefined do
+				(
+					try(convertToPoly obj)catch(exit; print "DetacByID: Error Occured on Object Conversion")
+					the_orig = obj
+					the_polyobj = copy the_orig
+
+					the_mat = obj.material
+					id_count = the_mat.numSubs
+					id_list = getMaterialIDs the_polyobj
+					
+					
+					for i in id_list do
+					(	
+						the_polyobj.selectByMaterial i
+						the_faces = getFaceSelection the_polyobj
+				
+						the_name = uniquename (the_polyobj.name)
+						polyOp.detachFaces the_polyobj the_faces asnode:true name:the_name
+						theDetachedObj = (getnodebyname the_name)
+						
+						if isValidNode theDetachedObj do
+						(
+							theDetachedObj.material = the_mat[i]
+						)													
+						
+					)
+					delete the_orig
+				)
+		)
+        
+		attachall()
+
+		
+
+	 
+	)
+			
+)
+DetachAll=DetachAll()
+ 
