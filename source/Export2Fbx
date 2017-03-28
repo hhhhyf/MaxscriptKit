@@ -1,0 +1,81 @@
+rollout Export2FBX "导出FBX" width:277 height:178
+(
+	dropDownList 'ExportUint' "" pos:[67,36] width:189 height:22 items:#("cm", "m", "mm") align:#left
+	label 'lbl1' "导出单位" pos:[10,39] width:46 height:20 align:#left
+	label 'lbl2' "FBX版本" pos:[11,71] width:46 height:18 align:#left
+	dropDownList 'FBXVersion' "" pos:[67,68] width:189 height:22 items:#("FBX2014", "FBX2012", "FBX2011", "FBX2010") align:#left
+	editText 'edt_path' "" pos:[7,102] width:208 height:22 align:#left
+	button 'btn_path' "..." pos:[224,103] width:32 height:22 align:#left
+	label 'lbl3' "文件名" pos:[11,9] width:46 height:20 align:#left
+	editText 'edt_name' "" pos:[62,6] width:194 height:22 align:#left
+	button 'btn_export' "导出" pos:[10,141] width:246 height:26 align:#left
+	
+	on Export2FBX open do
+	(
+		edt_name.text = getFileNameFile MaxFileName
+	)
+	
+	on btn_path pressed do
+	(
+		local FPath
+		FPath=getSavePath caption:"Select a Path to save FBX file"
+		if FPath== undefined do
+		(
+			return()
+		)
+	   edt_path.text= FPath As String	
+	)
+	
+	on btn_export pressed do
+	(
+		if edt_name.text == "" then
+		(
+			messagebox "请输入保存文件名"
+			return()
+		)
+		
+		if edt_path.text == "" then
+		(
+			messagebox "请设置导出目录"
+			return()
+		)		
+		
+		
+		pluginManager.loadClass FbxImporter
+        FbxImporterSetParam "SmoothingGroups" true
+		pluginManager.loadClass FbxExporter
+		FbxExporterSetParam "FileVersion" (FBXVersion.selected+"00")
+		FbxExporterSetParam "ConvertUnit" (ExportUint.selected+"00")
+		FbxExporterSetParam "Animation" False
+		FbxExporterSetParam "Cameras" False
+		FbxExporterSetParam "Lights" False
+		FbxExporterSetParam "Triangulate" true
+		FbxExporterSetParam "SmoothingGroups" true
+		FbxExporterSetParam "UpAxis" "Z"
+ 
+		print( units.SystemType)
+		
+		format ("FbxExporterVersion"+ FBXVersion.selected+"00\n")
+	
+		if ExportUint.text== "cm" then
+		(
+			units.SystemType= #Centimeters
+		)
+		else if ExportUint.text== "mm" then
+		(
+			units.SystemType= #Millimeters 
+		)
+		else if ExportUint.text== "m" then
+		(
+			units.SystemType= #Meters  
+		)
+
+		select $*
+
+		exportFile (edt_path.text+"\\" + edt_name.text +".fbx") #noPrompt selectedOnly:true
+		messagebox "导出成功！"
+ 
+	)
+)
+
+ 
